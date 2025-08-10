@@ -5,15 +5,15 @@
 	"scripts": {
 		"dev": "astro dev --host",
 		"clean": "rm -rf .astro/cache .vite dist && pnpm store prune",
-		"build": "pnpm run clean && astro check && astro build --prerender && pnpm run optimize:full && astro build",
+		"build": "pnpm run clean && astro check && astro build --prerender",
 		"preview": "astro build && wrangler dev",
 		"astro": "astro",
-		"deploy": "astro build && wrangler deploy && pnpm run github",
+		"deploy": "pnpm run optimize:full && wrangler deploy && pnpm run github",
 		"cf-typegen": "wrangler types",
 		"github": "git add . && git commit -m \"Deploy: $(date +'%Y-%m-%d %H:%M:%S')\" && git push origin HEAD",
 		"optimize:preloads": "node scripts-optimizations/PrecargaInteligente.js",
 		"optimize:images": "node scripts-optimizations/Transformacion-SmartImages.js",
-		"optimize:full": "pnpm run optimize:preloads && pnpm run optimize:images"
+		"optimize:full": "pnpm run optimize:images && pnpm run build && pnpm run optimize:preloads"
 	},
 	"dependencies": {
 		"@astrojs/check": "^0.9.4",
