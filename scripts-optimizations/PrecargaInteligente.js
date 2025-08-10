@@ -83,8 +83,8 @@ const CONFIG = {
 
 const CONSTANTS = {
   preloadMarkers: {
-    start: '<!-- 🚀🚀🚀 Preloads Content Optimizations Start 🚀🚀🚀-->',
-    end: '<!-- 🚀 Preloads Content Optimizations End 🚀-->',
+    start: '{/* 🚀🚀🚀 Preloads Content Optimizations Start 🚀🚀🚀 */}',
+    end: '{/* 🚀 Preloads Content Optimizations End 🚀 */}',
   },
 };
 
@@ -323,7 +323,7 @@ function generateUltraOptimizedPreloads(resources) {
 
   {/* 2. 🎨 CSS EXTERNOS - SEGUNDA PRIORIDAD */}
   if (resources.css.length > 0) {
-    lines.push('  <!-- 🎨 CSS CRÍTICOS EXTERNOS -->');
+    lines.push('  {/* 🎨 CSS CRÍTICOS EXTERNOS */}');
     resources.css.forEach((file, index) => {
       const priority = index === 0 ? 'high' : 'medium';
       lines.push(
@@ -356,7 +356,7 @@ function generateUltraOptimizedPreloads(resources) {
 
   {/* 4. 📄 JAVASCRIPT DE PÁGINA - CUARTA PRIORIDAD */}
   if (resources.pageJs.length > 0) {
-    lines.push('  <!-- 📄 JavaScript de Página -->');
+    lines.push('  {/* 📄 JavaScript de Página */}');
     resources.pageJs.forEach((file) => {
       lines.push(`  <script type="module" src="${file}" defer></script>`);
     });
@@ -365,7 +365,7 @@ function generateUltraOptimizedPreloads(resources) {
 
   {/* 5. 🔤 FUENTES - QUINTA PRIORIDAD */}
   if (resources.fonts.length > 0) {
-    lines.push('  <!-- 🔤 Fuentes Críticas -->');
+    lines.push('  {/* 🔤 Fuentes Críticas */}');
     resources.fonts.forEach((file, index) => {
       const priority = index === 0 ? 'high' : 'medium';
       lines.push(
