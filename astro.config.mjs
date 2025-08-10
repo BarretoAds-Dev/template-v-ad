@@ -2,6 +2,7 @@
 import { defineConfig } from 'astro/config';
 import cloudflare from '@astrojs/cloudflare';
 import viteCompression from 'vite-plugin-compression';
+import tailwindcss from '@tailwindcss/vite';
 
 // https://astro.build/config
 export default defineConfig({
@@ -19,6 +20,8 @@ export default defineConfig({
   },
   vite: {
     plugins: [
+      // Tailwind CSS
+      tailwindcss(),
       // Compresión Brotli
       viteCompression({
         threshold: 10240,

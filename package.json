@@ -19,6 +19,7 @@
 		"typescript": "^5.9.2"
 	},
 	"devDependencies": {
+		"@tailwindcss/vite": "^4.1.11",
 		"@types/node": "^24.2.1",
 		"vite-plugin-compression": "^0.5.1",
 		"wrangler": "^4.28.1"
