@@ -12,7 +12,8 @@
 		"cf-typegen": "wrangler types",
 		"github": "git add . && git commit -m \"Deploy: $(date +'%Y-%m-%d %H:%M:%S')\" && git push origin HEAD",
 		"optimize:preloads": "node scripts-optimizations/PrecargaInteligente.js",
-		"optimize:full": "pnpm run build && pnpm run optimize:preloads"
+		"optimize:images": "node scripts-optimizations/Transformacion-SmartImages.js",
+		"optimize:full": "pnpm run build && pnpm run optimize:preloads && pnpm run optimize:images"
 	},
 	"dependencies": {
 		"@astrojs/check": "^0.9.4",
@@ -24,7 +25,9 @@
 	"devDependencies": {
 		"@tailwindcss/vite": "^4.1.11",
 		"@types/node": "^24.2.1",
+		"blurhash": "^2.0.5",
 		"glob": "^11.0.3",
+		"sharp": "^0.34.3",
 		"vite-plugin-compression": "^0.5.1",
 		"wrangler": "^4.28.1"
 	}

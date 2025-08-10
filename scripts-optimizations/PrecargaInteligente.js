@@ -279,45 +279,59 @@ function generateUltraOptimizedPreloads(resources) {
   {/* 1. 🎨 CSS CRÍTICO INLINE - PRIMERA PRIORIDAD (style) */}
   lines.push('  {/* 🎨 CSS CRÍTICO INLINE - MÁXIMA PRIORIDAD  */}');
   lines.push(`  <style is:inline id="critical-css">
-  *,
-  *::before,
-  *::after {
-    box-sizing: border-box;
-    -ms-overflow-style: none;
-    scrollbar-width: none; 
-  }
-  ::-webkit-scrollbar {
-    display: none;
-  }
-  html {
-    min-height: 100%;
-    scroll-behavior: smooth;
-    scrollbar-gutter: stable;
-    background-color: #f4f4f5;
-    color: #020618;
-    text-size-adjust: 100%;
-    font-size: clamp(1rem, 1vw, 2rem);
-    -webkit-tap-highlight-color: transparent;
-    font-variant-alternates: normal;
-    font-stretch: normal;
-    font-display: swap;
-    text-rendering: optimizeSpeed;
-    font-weight: 400;
-    font-size-adjust: 0.5;
-    ascent-override: 90%;
-    descent-override: 20%;
-    line-gap-override: 0%;
-  }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  -ms-overflow-style: none; 
+  scrollbar-width: none; 
+}
+::-webkit-scrollbar {
+  display: none;
+}
+::selection {
+  background-color: var(--text-color);
+  color: var(--background-color);
+}
+html {
+  min-height: 100%;
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  font-variant-alternates: normal;
+  font-stretch: normal;
+  font-display: swap;
+  text-rendering: optimizeSpeed;
+  font-weight: 400;
+  font-size-adjust: 0.5;
+  ascent-override: 90%;
+  descent-override: 20%;
+  line-gap-override: 0%;
+}
 
-  ::selection {
-    background-color: rgb(59 130 246); 
-    color: white;
-  }
+body {
+  display: grid;
+  min-height: 100dvh;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    "header"
+    "main"
+    "footer";
+}
+header {
+  grid-area: header;
+}
 
-  main {
-    container-type: inline-size;
-    container-name: main-layout;
-  }
+main {
+  grid-area: main;
+  container-type: inline-size;
+  container-name: main-layout;
+  flex: 1 0 auto; 
+}
+footer {
+  grid-area: footer;
+}
 </style>`);
   logger.log('   ✅ CSS Inline crítico añadido (style)');
 
