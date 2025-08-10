@@ -1,0 +1,26 @@
+{
+	"name": "template-v-ad",
+	"type": "module",
+	"version": "0.0.1",
+	"scripts": {
+		"dev": "astro dev --host",
+		"clean": "rm -rf .astro/cache .vite dist && pnpm store prune",
+		"build": "pnpm run clean && astro check && astro build --prerender && astro build",
+		"preview": "astro build && wrangler dev",
+		"astro": "astro",
+		"deploy": "astro build && wrangler deploy && pnpm run github",
+		"cf-typegen": "wrangler types",
+		"github": "git add . && git commit -m \"Deploy: $(date +'%Y-%m-%d %H:%M:%S')\" && git push origin HEAD"
+	},
+	"dependencies": {
+		"@astrojs/check": "^0.9.4",
+		"@astrojs/cloudflare": "^12.6.3",
+		"astro": "^5.12.9",
+		"typescript": "^5.9.2"
+	},
+	"devDependencies": {
+		"@types/node": "^24.2.1",
+		"vite-plugin-compression": "^0.5.1",
+		"wrangler": "^4.28.1"
+	}
+}
