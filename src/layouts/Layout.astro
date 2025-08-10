@@ -1,26 +1,27 @@
 ---
-import '../styles/global.css';
+import '@/styles/global.css';
+import MetaHead from '@/layouts/MetaHead.astro';
 ---
 
 <!doctype html>
+  <!-- /*
+    ============================================================================
+    ||                                                                        ||
+    ||               ESTE ES UN TEMPLATE DE BY BARRETO DEV                    ||
+    ||                                                                        ||
+    ||                 Diseñado con ❤️ por By BARRETO DEV                     ||
+    ||           https://github.com/Barreto-dev/template-v-ad          		  ||
+    ||                                                                        ||
+    ============================================================================
+  */ -->
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
-	</head>
+<MetaHead />
+
+
 	<body>
 		<slot />
 	</body>
+
+
 </html>
 
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
-</style>

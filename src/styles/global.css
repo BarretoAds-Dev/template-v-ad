@@ -1,3 +1,72 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities; 
+/* src/styles/global.css */
+@import "tailwindcss";
+
+/* -------------------------------------------
+   1. Custom Theme Variables
+------------------------------------------- */
+/* Colores de marca como clases Tailwind - cambiar "marca" por el nombre rela de la empresa */
+
+
+.bg-template-plata {
+  background-color: var(--marca-plata, #f4f4f5);
+}
+.bg-template-dark {
+  background-color: var(--marca-dark, #020618);
+}
+
+/* -------------------------------------------
+   2. Universal CSS 
+------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+::-webkit-scrollbar {
+  display: none;
+}
+::selection {
+  background-color: var(--text-color);
+  color: var(--background-color);
+}
+html {
+  min-height: 100%;
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  font-variant-alternates: normal;
+  font-stretch: normal;
+  font-display: swap;
+  text-rendering: optimizeSpeed;
+  font-weight: 400;
+  font-size-adjust: 0.5;
+  ascent-override: 90%;
+  descent-override: 20%;
+  line-gap-override: 0%;
+}
+
+body {
+  display: grid;
+  min-height: 100dvh;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    "header"
+    "main"
+    "footer";
+}
+header {
+  grid-area: header;
+}
+
+main {
+  grid-area: main;
+  container-type: inline-size;
+  container-name: main-layout;
+  flex: 1 0 auto; /* Asegura que crezca para ocupar espacio disponible */
+}
+footer {
+  grid-area: footer;
+}
