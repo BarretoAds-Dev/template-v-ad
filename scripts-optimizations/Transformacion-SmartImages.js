@@ -69,7 +69,7 @@ const PROJECT_ROOT = path.resolve(__dirname, '..');
 
 const CONFIG = {
   inputDir: path.join(PROJECT_ROOT, 'src/assets/images'),
-  outputDir: path.join(PROJECT_ROOT, 'dist/assets/img-op'),
+  outputDir: path.join(PROJECT_ROOT, 'public/assets/img-op'),
   formats: {
     avif: { quality: 30, effort: 9 }, // ULTRA OPTIMIZADA
     webp: { quality: 50 }, // Más comprimida
@@ -391,7 +391,7 @@ async function processPwaIcons(sourcePath) {
   const sourceImage = sharp(sourcePath);
 
   // Nueva carpeta destino para iconos
-  const iconsDir = path.join(PROJECT_ROOT, 'dist', 'assets', 'icons');
+  const iconsDir = path.join(PROJECT_ROOT, 'public', 'assets', 'icons');
   if (!existsSync(iconsDir)) {
     await fs.mkdir(iconsDir, { recursive: true });
   }

@@ -1,1 +1,16 @@
-{}
+{
+  "/Users/barretodev/ProyectosBarretoDevsLocal/template-v-ad/src/assets/images/background.svg": {
+    "hash": "c2eaad48507ad1ea41f586bd5c21858a",
+    "timestamp": 1754843269050,
+    "outputFiles": [
+      "/Users/barretodev/ProyectosBarretoDevsLocal/template-v-ad/public/assets/img-op/background.svg"
+    ]
+  },
+  "/Users/barretodev/ProyectosBarretoDevsLocal/template-v-ad/src/assets/images/astro.svg": {
+    "hash": "d26c3520f1f016bad745392df8b5fae5",
+    "timestamp": 1754843269051,
+    "outputFiles": [
+      "/Users/barretodev/ProyectosBarretoDevsLocal/template-v-ad/public/assets/img-op/astro.svg"
+    ]
+  }
+}
