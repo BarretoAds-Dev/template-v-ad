@@ -18,6 +18,8 @@ export default defineConfig({
     prefetchAll: false,
     defaultStrategy: 'hover',
   },
+
+
   vite: {
     plugins: [
       // Tailwind CSS

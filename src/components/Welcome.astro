@@ -1,19 +1,18 @@
 ---
-import astroLogo from '../assets/img-op/astro.svg';
-import background from '../assets/img-op/background.svg';
+
 ---
 
 <div id="container">
-	<img id="background" src={background.src} alt="" fetchpriority="high" />
+	<img id="background" src="/assets/img-op/background.svg" alt="" fetchpriority="high" />
 	<main>
 		<section id="hero">
 			<a href="https://astro.build"
-				><img src={astroLogo.src} width="115" height="48" alt="Astro Homepage" /></a
+				><img src="/assets/img-op/astro.svg" width="115" height="48" alt="Astro Homepage" /></a
 			>
 			<h1>
 				To get started, open the <code><pre>src/pages</pre></code> directory in your project.
 			</h1>
-			<div class="bg-blue-900 text-white p-4 rounded-lg text-xl">
+			<div class="bg-blue-900 text-red-500 p-4 rounded-lg text-xl">
 				¡Hola Tailwind CSS!
 			  </div>
 			<section id="links">
