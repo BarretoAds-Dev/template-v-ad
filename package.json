@@ -13,7 +13,7 @@
 		"github": "git add . && git commit -m \"Deploy: $(date +'%Y-%m-%d %H:%M:%S')\" && git push origin HEAD",
 		"optimize:preloads": "node scripts-optimizations/PrecargaInteligente.js",
 		"optimize:images": "node scripts-optimizations/Transformacion-SmartImages.js",
-		"optimize:full": "pnpm run build && pnpm run optimize:preloads && pnpm run optimize:images"
+		"optimize:full": "pnpm run optimize:preloads && pnpm run optimize:images"
 	},
 	"dependencies": {
 		"@astrojs/check": "^0.9.4",
