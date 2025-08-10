@@ -1,5 +1,5 @@
 // ============================================================================
-// 🚀 SCRIPT DE TRANSFORMACIÓN DE IMÁGENES INTELIGENTE v2.0 - ASTRO FUSION
+// 🚀 SCRIPT DE TRANSFORMACIÓN DE IMÁGENES INTELIGENTE v2.1 - ASTRO FUSION
 // ============================================================================
 // CARACTERÍSTICAS:
 // 1. Optimización ultra-avanzada con Sharp
@@ -8,7 +8,8 @@
 // 4. Generación de iconos PWA optimizados
 // 5. Detección automática de tipos de imagen
 // 6. Placeholders y BlurHash para lazy loading
-// 7. Configuración adaptada para Astro + Tailwind CSS
+// 7. Procesamiento directo desde src/assets/images
+// 8. Salida optimizada en dist/assets/img-op
 // ============================================================================
 
 import sharp from 'sharp';
@@ -68,17 +69,12 @@ const PROJECT_ROOT = path.resolve(__dirname, '..');
 
 const CONFIG = {
   inputDir: path.join(PROJECT_ROOT, 'src/assets/images'),
-  outputDir: path.join(PROJECT_ROOT, 'public/assets/img-op'),
+  outputDir: path.join(PROJECT_ROOT, 'dist/assets/img-op'),
   formats: {
     avif: { quality: 30, effort: 9 }, // ULTRA OPTIMIZADA
     webp: { quality: 50 }, // Más comprimida
   },
   defaultSize: { width: 800, height: 600 },
-  seoConfigFile: path.join(PROJECT_ROOT, 'src/data/seoConfig/2-seoIMAGEConfig.ts'),
-  defaultMetadata: {
-    copyright: `© ${new Date().getFullYear()} BarretoAds Dev`,
-    author: 'BarretoAds Dev',
-  },
   // Configuración avanzada para diferentes tipos de imagen
   imageTypes: {
     hero: { formats: ['avif', 'webp'], quality: { avif: 30, webp: 50 } },
@@ -105,7 +101,7 @@ const CONFIG = {
  */
 async function optimizeImages() {
   const startTime = Date.now();
-  console.log('🚀 Iniciando la optimización de imágenes en modo de doble flujo...');
+  console.log('🚀 Iniciando la optimización de imágenes...');
   console.time('⏱️ Tiempo total de ejecución');
   const finalResult = { successCount: 0, errorCount: 0 };
 
@@ -121,37 +117,23 @@ async function optimizeImages() {
     }
     await fs.mkdir(CONFIG.outputDir, { recursive: true });
 
-    // 2. FLUJO 1: Procesar imágenes gestionadas por el archivo de configuración.
-    const {
-      updatedAssets,
-      managedSourcePaths,
-      result: managedResult,
-    } = await processManagedImages(cache);
-    finalResult.successCount += managedResult.successCount;
-    finalResult.errorCount += managedResult.errorCount;
+    // 2. Procesar todas las imágenes encontradas en el directorio de entrada
+    const result = await processAllImages(cache);
+    finalResult.successCount += result.successCount;
+    finalResult.errorCount += result.errorCount;
 
-    // 3. FLUJO 2: Procesar imágenes no gestionadas que se encuentren en el directorio.
-    const unmanagedResult = await processUnmanagedImages(managedSourcePaths, cache);
-    finalResult.successCount += unmanagedResult.successCount;
-    finalResult.errorCount += unmanagedResult.errorCount;
-
-    // 4. Actualizar el archivo de configuración solo con los assets gestionados.
-    if (Object.keys(updatedAssets).length > 0) {
-      await updateSeoConfigFile(updatedAssets);
-    }
-
-    // 5. Guardar cache actualizado
+    // 3. Guardar cache actualizado
     await saveCache(cache);
     console.log(`💾 Cache guardado: ${Object.keys(cache).length} entradas`);
 
-    // 6. Generar reporte detallado
+    // 4. Generar reporte detallado
     await generateOptimizationReport(finalResult, cache, startTime);
   } catch (error) {
     console.error(`\n❌ Error catastrófico:`, error instanceof Error ? error.message : error);
     finalResult.errorCount++;
     process.exit(1);
   } finally {
-    // 7. Mostrar reporte final.
+    // 5. Mostrar reporte final.
     console.log('\n----------------------------------------');
     console.log('📊 REPORTE DE OPTIMIZACIÓN');
     console.log(`   ✅ Imágenes procesadas con éxito: ${finalResult.successCount}`);
@@ -167,160 +149,36 @@ async function optimizeImages() {
 }
 
 // ============================================================================
-// FLUJO 1: IMÁGENES GESTIONADAS (CONFIG-DRIVEN)
+// PROCESAMIENTO DE TODAS LAS IMÁGENES
 // ============================================================================
 
 /**
- * Procesa imágenes gestionadas desde el archivo de configuración
- * @param {CacheData} cache - Cache de optimización
- * @returns {Promise<{updatedAssets: Record<string, any>, managedSourcePaths: Set<string>, result: ProcessResult}>}
- */
-async function processManagedImages(cache) {
-  console.log(`\n📄 FLUJO 1: Procesando imágenes gestionadas desde ${CONFIG.seoConfigFile}`);
-  const updatedAssets = {};
-  const managedSourcePaths = new Set();
-  const result = { successCount: 0, errorCount: 0 };
-
-  try {
-    // Verificar si existe el archivo de configuración
-    if (!existsSync(CONFIG.seoConfigFile)) {
-      console.log('   ⚠️ Archivo de configuración no encontrado, saltando FLUJO 1');
-      return { updatedAssets, managedSourcePaths, result };
-    }
-
-    const seoConfigModule = await import(`${CONFIG.seoConfigFile}?v=${Date.now()}`);
-    const imageAssets = seoConfigModule.IMAGE_ASSETS || {};
-
-    for (const key in imageAssets) {
-      try {
-        const asset = { ...imageAssets[key] }; // Clonar para evitar mutación directa
-        if (typeof asset !== 'object' || asset === null || !asset.url) continue;
-
-        const sourcePath = path.resolve(
-          PROJECT_ROOT,
-          asset.url.startsWith('/') ? asset.url.substring(1) : asset.url
-        );
-        if (!existsSync(sourcePath)) {
-          throw new Error(`El archivo fuente ${sourcePath} no existe.`);
-        }
-        managedSourcePaths.add(sourcePath);
-
-        // Verificar si el archivo ya está optimizado y en cache
-        if (await isFileCached(sourcePath, cache)) {
-          console.log(`   ⚙️  Saltando optimización de "${key}" (ya optimizado y en cache)`);
-          updatedAssets[key] = asset; // Mantener la entrada original si ya está optimizado
-          result.successCount++;
-          continue;
-        }
-
-        const { name, ext } = path.parse(sourcePath);
-
-        // CASO ESPECIAL: Procesar el icono maestro y sus variantes PWA
-        if (key === 'Icon') {
-          console.log(`   🎨 Procesando caso especial: "${key}" para PWA`);
-
-          // Procesar el archivo SVG original
-          const { name } = path.parse(sourcePath);
-          const dimensions = { width: asset.width, height: asset.height };
-          const svgResult = await processSvg(sourcePath, name, dimensions, key);
-          if (svgResult) {
-            // Solo actualizamos los campos optimizados, nunca la url fuente
-            Object.entries(svgResult).forEach(([k, v]) => {
-              if (k !== 'url') asset[k] = v;
-            });
-          }
-
-          // Generar iconos PWA
-          asset.pwaIcons = await processPwaIcons(sourcePath);
-          result.successCount += asset.pwaIcons.length + 1; // +1 por el SVG
-        }
-        // CASO GENERAL: Procesar imágenes normales
-        else if (asset.width && asset.height) {
-          const dimensions = { width: asset.width, height: asset.height };
-          const imageType = detectImageType(name, dimensions);
-          console.log(`   🎯 Tipo detectado para "${key}": ${imageType}`);
-
-          let imageResult = null;
-          if (ext.toLowerCase() === '.svg') {
-            imageResult = await processSvg(sourcePath, name, dimensions, key);
-          } else {
-            imageResult = await processRasterImage(sourcePath, name, dimensions, key, imageType);
-          }
-          if (!imageResult) throw new Error('El procesamiento de la imagen falló.');
-
-          // Solo actualizamos los campos optimizados, nunca la url fuente
-          Object.entries(imageResult).forEach(([k, v]) => {
-            if (k !== 'url') asset[k] = v;
-          });
-
-          // Actualizar cache con los archivos generados
-          const outputFiles = Object.values(imageResult.sources || {}).map((src) =>
-            path.resolve(PROJECT_ROOT, src.startsWith('/') ? src.substring(1) : src)
-          );
-          await updateCache(sourcePath, outputFiles, cache);
-
-          result.successCount++;
-        }
-
-        if (!asset.metadata) asset.metadata = {};
-        Object.assign(asset.metadata, {
-          ...CONFIG.defaultMetadata,
-          ...asset.metadata,
-          created: new Date().toISOString(),
-        });
-        updatedAssets[key] = asset;
-      } catch (error) {
-        console.error(
-          `   ❌ Error en la clave gestionada "${key}":`,
-          error instanceof Error ? error.message : 'Error desconocido.'
-        );
-        result.errorCount++;
-        updatedAssets[key] = imageAssets[key]; // Mantener la entrada original si falla
-      }
-    }
-  } catch (error) {
-    console.error(
-      `   ❌ Error fatal leyendo ${CONFIG.seoConfigFile}:`,
-      error instanceof Error ? error.message : error
-    );
-    result.errorCount++;
-  }
-
-  return { updatedAssets, managedSourcePaths, result };
-}
-
-// ============================================================================
-// FLUJO 2: IMÁGENES NO GESTIONADAS (DIRECTORY-DRIVEN)
-// ============================================================================
-
-/**
- * Procesa imágenes no gestionadas encontradas en el directorio
- * @param {Set<string>} managedSourcePaths - Rutas de imágenes ya gestionadas
+ * Procesa todas las imágenes encontradas en el directorio de entrada
  * @param {CacheData} cache - Cache de optimización
  * @returns {Promise<ProcessResult>}
  */
-async function processUnmanagedImages(managedSourcePaths, cache) {
-  console.log(`\n📂 FLUJO 2: Buscando imágenes no gestionadas en ${CONFIG.inputDir}`);
+async function processAllImages(cache) {
+  console.log(`\n📂 Procesando todas las imágenes en ${CONFIG.inputDir}`);
   const result = { successCount: 0, errorCount: 0 };
 
   // Verificar si existe el directorio de entrada
   if (!existsSync(CONFIG.inputDir)) {
-    console.log('   ⚠️ Directorio de entrada no encontrado, saltando FLUJO 2');
+    console.log('   ⚠️ Directorio de entrada no encontrado, creando directorio...');
+    await fs.mkdir(CONFIG.inputDir, { recursive: true });
+    console.log('   ✅ Directorio de entrada creado.');
     return result;
   }
 
   const allImagePaths = await glob(`${CONFIG.inputDir}/**/*.{jpg,jpeg,png,gif,tiff,svg}`);
 
-  const unmanagedPaths = allImagePaths
-    .map((p) => path.resolve(p))
-    .filter((p) => !managedSourcePaths.has(p));
-
-  if (unmanagedPaths.length === 0) {
-    console.log('   ✅ No se encontraron imágenes no gestionadas.');
+  if (allImagePaths.length === 0) {
+    console.log('   ✅ No se encontraron imágenes para procesar.');
     return result;
   }
 
-  for (const sourcePath of unmanagedPaths) {
+  console.log(`   📊 Encontradas ${allImagePaths.length} imágenes para procesar.`);
+
+  for (const sourcePath of allImagePaths) {
     try {
       // Verificar si el archivo ya está optimizado y en cache
       if (await isFileCached(sourcePath, cache)) {
@@ -335,20 +193,23 @@ async function processUnmanagedImages(managedSourcePaths, cache) {
       const cleanedName = cleanBaseName(name);
       const dimensions = extractDimensionsFromName(name) || CONFIG.defaultSize;
 
-      console.log(`   🖼️  Procesando no gestionada: ${path.basename(sourcePath)}`);
+      console.log(`   🖼️  Procesando: ${path.basename(sourcePath)}`);
 
       let outputFiles = [];
       if (ext.toLowerCase() === '.svg') {
-        const result = await processSvg(sourcePath, name, dimensions, cleanedName);
-        if (result?.sources) {
-          outputFiles = Object.values(result.sources).map((src) =>
+        const imageResult = await processSvg(sourcePath, name, dimensions, cleanedName);
+        if (imageResult?.sources) {
+          outputFiles = Object.values(imageResult.sources).map((src) =>
             path.resolve(PROJECT_ROOT, src.startsWith('/') ? src.substring(1) : src)
           );
         }
       } else {
-        const result = await processRasterImage(sourcePath, name, dimensions, cleanedName);
-        if (result?.sources) {
-          outputFiles = Object.values(result.sources).map((src) =>
+        const imageType = detectImageType(name, dimensions);
+        console.log(`     🎯 Tipo detectado: ${imageType}`);
+        
+        const imageResult = await processRasterImage(sourcePath, name, dimensions, cleanedName, imageType);
+        if (imageResult?.sources) {
+          outputFiles = Object.values(imageResult.sources).map((src) =>
             path.resolve(PROJECT_ROOT, src.startsWith('/') ? src.substring(1) : src)
           );
         }
@@ -360,7 +221,7 @@ async function processUnmanagedImages(managedSourcePaths, cache) {
       result.successCount++;
     } catch (error) {
       console.error(
-        `   ❌ Error en el archivo no gestionado ${path.basename(sourcePath)}:`,
+        `   ❌ Error en el archivo ${path.basename(sourcePath)}:`,
         error instanceof Error ? error.message : 'Error desconocido.'
       );
       result.errorCount++;
@@ -530,7 +391,7 @@ async function processPwaIcons(sourcePath) {
   const sourceImage = sharp(sourcePath);
 
   // Nueva carpeta destino para iconos
-  const iconsDir = path.join(PROJECT_ROOT, 'public', 'assets', 'icons');
+  const iconsDir = path.join(PROJECT_ROOT, 'dist', 'assets', 'icons');
   if (!existsSync(iconsDir)) {
     await fs.mkdir(iconsDir, { recursive: true });
   }
@@ -609,85 +470,8 @@ async function processPwaIcons(sourcePath) {
 }
 
 // ============================================================================
-// UTILIDADES DE ESCRITURA DE ARCHIVO
+// UTILIDADES DE PROCESAMIENTO
 // ============================================================================
-
-/**
- * Convierte un valor a string de TypeScript
- * @param {unknown} value - Valor a convertir
- * @param {string} indent - Indentación
- * @returns {string}
- */
-const toTypeScriptValueString = (value, indent = '') => {
-  if (value === null) return 'null';
-  if (typeof value === 'string') return `'${value.replace(/'/g, "\\'")}'`;
-  if (typeof value !== 'object') return String(value);
-  const newIndent = indent + '  ';
-  if (Array.isArray(value)) {
-    if (value.length === 0) return '[]';
-    const items = value
-      .map((item) => `${newIndent}${toTypeScriptValueString(item, newIndent)}`)
-      .join(',\n');
-    return `[\n${items}\n${indent}]`;
-  }
-  const items = Object.entries(value)
-    .map(([k, v]) =>
-      v !== undefined ? `${newIndent}${k}: ${toTypeScriptValueString(v, newIndent)}` : null
-    )
-    .filter(Boolean)
-    .join(',\n');
-  return `{\n${items}\n${indent}}`;
-};
-
-/**
- * Actualiza el archivo de configuración SEO
- * @param {Record<string, any>} processedImages - Imágenes procesadas
- * @returns {Promise<void>}
- */
-async function updateSeoConfigFile(processedImages) {
-  console.log(`\n✍️  Actualizando archivo de configuración con los assets gestionados.`);
-  
-  // Verificar si existe el archivo de configuración
-  if (!existsSync(CONFIG.seoConfigFile)) {
-    console.log('   ⚠️ Archivo de configuración no encontrado, creando uno nuevo...');
-    await fs.mkdir(path.dirname(CONFIG.seoConfigFile), { recursive: true });
-    
-    const newContent = `// ============================================================================
-// CONFIGURACIÓN DE IMÁGENES SEO - GENERADO AUTOMÁTICAMENTE
-// ============================================================================
-// Última actualización: ${new Date().toISOString()}
-
-export const IMAGE_ASSETS = {
-${Object.entries(processedImages)
-  .map(([key, asset]) => `  ${key}: ${toTypeScriptValueString(asset, '  ')}`)
-  .join(',\n')}
-} as const;
-`;
-    await fs.writeFile(CONFIG.seoConfigFile, newContent, 'utf-8');
-    console.log('   ✅ Archivo de configuración creado con éxito.');
-    return;
-  }
-
-  const originalContent = await fs.readFile(CONFIG.seoConfigFile, 'utf-8');
-  let newAssetsContent = 'export const IMAGE_ASSETS = {\n';
-  const keys = Object.keys(processedImages);
-  keys.forEach((key, index) => {
-    newAssetsContent += `  ${key}: ${toTypeScriptValueString(processedImages[key], '  ')}${
-      index < keys.length - 1 ? ',\n' : '\n'
-    }`;
-  });
-  newAssetsContent += '} as const;';
-  const updatedContent = originalContent.replace(
-    /export const IMAGE_ASSETS = \{[\s\S]*?\} as const;/m,
-    newAssetsContent
-  );
-  const finalContent = updatedContent.replace(
-    /(Última actualización: ).*Z/m,
-    `$1${new Date().toISOString()}`
-  );
-  await fs.writeFile(CONFIG.seoConfigFile, finalContent, 'utf-8');
-  console.log('   ✅ Archivo de configuración actualizado con éxito.');
-}
 
 // ============================================================================
 // UTILIDADES DE CACHE
