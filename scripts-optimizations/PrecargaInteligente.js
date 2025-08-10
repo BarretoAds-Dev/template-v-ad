@@ -276,8 +276,8 @@ function generateUltraOptimizedPreloads(resources) {
     return '';
   }
 
-  // 1. 🎨 CSS CRÍTICO INLINE - PRIMERA PRIORIDAD (style)
-  lines.push('  <!-- 🎨 CSS CRÍTICO INLINE - MÁXIMA PRIORIDAD -->');
+  {/* 1. 🎨 CSS CRÍTICO INLINE - PRIMERA PRIORIDAD (style) */}
+  lines.push('  {/* 🎨 CSS CRÍTICO INLINE - MÁXIMA PRIORIDAD  */}');
   lines.push(`  <style is:inline id="critical-css">
   *,
   *::before,
@@ -321,7 +321,7 @@ function generateUltraOptimizedPreloads(resources) {
 </style>`);
   logger.log('   ✅ CSS Inline crítico añadido (style)');
 
-  // 2. 🎨 CSS EXTERNOS - SEGUNDA PRIORIDAD
+  {/* 2. 🎨 CSS EXTERNOS - SEGUNDA PRIORIDAD */}
   if (resources.css.length > 0) {
     lines.push('  <!-- 🎨 CSS CRÍTICOS EXTERNOS -->');
     resources.css.forEach((file, index) => {
@@ -333,16 +333,16 @@ function generateUltraOptimizedPreloads(resources) {
     });
   }
 
-  // 3. ⚡ JAVASCRIPT CRÍTICO - TERCERA PRIORIDAD
+  {/* 3. ⚡ JAVASCRIPT CRÍTICO - TERCERA PRIORIDAD */}
   if (resources.js.length > 0) {
-    lines.push('  <!-- ⚡ JavaScript Crítico -->');
+    lines.push('  {/* ⚡ JavaScript Crítico */}');
 
-    // Preload del JS crítico
+    {/* Preload del JS crítico */}
     lines.push(
       `  <link rel="modulepreload" href="${resources.js[0]}" as="script" fetchpriority="high">`
     );
 
-    // Script tags para ejecución
+    {/* Script tags para ejecución */}
     resources.js.forEach((file, index) => {
       const isCritical = index === 0;
       const scriptTag = isCritical
@@ -354,7 +354,7 @@ function generateUltraOptimizedPreloads(resources) {
     logger.log(`   ✅ JS crítico: ${resources.js.join(', ')}`);
   }
 
-  // 4. 📄 JAVASCRIPT DE PÁGINA - CUARTA PRIORIDAD
+  {/* 4. 📄 JAVASCRIPT DE PÁGINA - CUARTA PRIORIDAD */}
   if (resources.pageJs.length > 0) {
     lines.push('  <!-- 📄 JavaScript de Página -->');
     resources.pageJs.forEach((file) => {
@@ -363,7 +363,7 @@ function generateUltraOptimizedPreloads(resources) {
     logger.log(`   ✅ JS de página: ${resources.pageJs.join(', ')}`);
   }
 
-  // 5. 🔤 FUENTES - QUINTA PRIORIDAD
+  {/* 5. 🔤 FUENTES - QUINTA PRIORIDAD */}
   if (resources.fonts.length > 0) {
     lines.push('  <!-- 🔤 Fuentes Críticas -->');
     resources.fonts.forEach((file, index) => {
@@ -508,7 +508,7 @@ async function runUltraPreloadOptimization() {
   }
 }
 
-// Ejecutar si es llamado directamente
+{/* Ejecutar si es llamado directamente */}
 if (process.argv[1] && process.argv[1].includes('PrecargaInteligente.js')) {
   console.log('🚀 Iniciando script de optimización...');
   runUltraPreloadOptimization();
