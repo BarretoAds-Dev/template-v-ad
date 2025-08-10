@@ -5,7 +5,7 @@
 	"scripts": {
 		"dev": "astro dev --host",
 		"clean": "rm -rf .astro/cache .vite dist && pnpm store prune",
-		"build": "pnpm run clean && astro check && astro build --prerender && astro build",
+		"build": "pnpm run clean && astro check && astro build --prerender && pnpm run optimize:full && astro build",
 		"preview": "astro build && wrangler dev",
 		"astro": "astro",
 		"deploy": "astro build && wrangler deploy && pnpm run github",
